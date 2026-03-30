@@ -150,7 +150,7 @@ fig.add_scatter(
     y=selected_data['CO2 Emissions'],
     mode='markers',
     marker=dict(size=14, color='green', symbol='diamond'),
-    name='Selected Country 🔍'
+    name='Selected Country 🔍'+selected_country
 )
 
 st.plotly_chart(fig)
