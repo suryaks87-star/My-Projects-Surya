@@ -116,8 +116,7 @@ st.success(f"{selected_country} is: {selected_label}")
 # Similar countries
 similar = df[df['Cluster'] == selected_cluster]['Country']
 
-st.write("### 🤝 Similar Countries")
-st.write(similar.tolist())
+
 
 
 
