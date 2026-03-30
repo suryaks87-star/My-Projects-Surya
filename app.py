@@ -42,7 +42,7 @@ st.title("🌍 Country Development Clustering App")
 # -------------------------------
 df = pd.read_csv("cleaned_data.csv")
 
-st.write(df.columns)
+
 
 # -------------------------------
 # Features
