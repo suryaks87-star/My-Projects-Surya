@@ -29,8 +29,8 @@ co2 = st.number_input("CO2 Emissions (Example: 2500000)", min_value=0.0)
 # -----------------------------
 # LOAD MODEL
 # -----------------------------
-scaler = pickle.load(open('scaler.pkl', 'rb'))
-kmeans = pickle.load(open('kmeans.pkl', 'rb'))
+scaler = pickle.load(open('scaler2.pkl', 'rb'))
+kmeans = pickle.load(open('kmeans2.pkl', 'rb'))
 
 # -----------------------------
 # PREDICTION
