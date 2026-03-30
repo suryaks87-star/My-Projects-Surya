@@ -8,83 +8,85 @@ Original file is located at
 """
 
 import streamlit as st
-import pandas as pd
+import numpy as np
 import pickle
+import pandas as pd
+import plotly.express as px
 
-st.title("🌍 Country Clustering App")
+st.set_page_config(page_title="Country Clustering App", layout="centered")
 
-# Upload file
-uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
+st.title("🌍 Country Development Predictor")
 
-if uploaded_file is not None:
+st.write("Enter country details to predict whether it is Developed or Developing")
 
-    df = pd.read_csv(uploaded_file)
+# -----------------------------
+# USER INPUT
+# -----------------------------
+gdp = st.number_input("GDP (Example: 3000000000000)", min_value=0.0)
+birth_rate = st.number_input("Birth Rate (Example: 15.2)", min_value=0.0)
+co2 = st.number_input("CO2 Emissions (Example: 2500000)", min_value=0.0)
 
-    st.write("### Raw Data")
-    st.write(df.head())
+# -----------------------------
+# LOAD MODEL
+# -----------------------------
+scaler = pickle.load(open('scaler.pkl', 'rb'))
+kmeans = pickle.load(open('kmeans.pkl', 'rb'))
+
+# -----------------------------
+# PREDICTION
+# -----------------------------
+if st.button("Predict"):
+
+    # Input array
+    input_data = np.array([[gdp, birth_rate, co2]])
+
+    # Scale
+    input_scaled = scaler.transform(input_data)
+
+    # Predict cluster
+    cluster = kmeans.predict(input_scaled)[0]
 
     # -----------------------------
-    # DATA CLEANING
+    # CLUSTER INTERPRETATION
     # -----------------------------
-    try:
-        df['GDP'] = df['GDP'].replace(r'[\$,]', '', regex=True).astype(float)
-        df['CO2 Emissions'] = df['CO2 Emissions'].replace(',', '', regex=True).astype(float)
-        df['Birth Rate'] = pd.to_numeric(df['Birth Rate'], errors='coerce')
-    except:
-        st.error("Column names not matching! Please check your dataset.")
-        st.stop()
+    if cluster == 0:
+        result = "Developed Country 🌟"
+    elif cluster == 1:
+        result = "Developing Country 🌱"
+    else:
+        result = "Underdeveloped Country ⚠️"
 
-    # Select features
-    features = ['GDP', 'Birth Rate', 'CO2 Emissions']
-    X = df[features]
-
-    # Handle missing values
-    X.fillna(X.mean(), inplace=True)
-
-    # -----------------------------
-    # LOAD MODEL + SCALER
-    # -----------------------------
-    try:
-        scaler = pickle.load(open('scaler.pkl', 'rb'))
-        kmeans = pickle.load(open('kmeans.pkl', 'rb'))
-    except:
-        st.error("Model files not found! Upload scaler.pkl and kmeans.pkl")
-        st.stop()
-
-    # Scale data
-    X_scaled = scaler.transform(X)
-
-    # Predict clusters
-    clusters = kmeans.predict(X_scaled)
-
-    # Add cluster column
-    df['Cluster'] = clusters
-
-    st.write("### Clustered Data")
-    st.write(df.head())
+    st.success(f"Predicted Cluster: {cluster}")
+    st.subheader(result)
 
     # -----------------------------
     # VISUALIZATION
     # -----------------------------
-    st.write("### Cluster Visualization")
+    st.write("### 📊 Cluster Visualization")
 
-    import plotly.express as px
+    # Sample dataset (for plotting reference clusters)
+    data = pd.DataFrame({
+        'GDP': [1e12, 5e12, 2e12, 8e11, 3e12],
+        'CO2': [1e6, 5e6, 2e6, 8e5, 3e6],
+        'Cluster': [0, 1, 2, 0, 1]
+    })
+
+    # Add user input point
+    user_df = pd.DataFrame({
+        'GDP': [gdp],
+        'CO2': [co2],
+        'Cluster': [cluster]
+    })
+
+    # Combine
+    plot_df = pd.concat([data, user_df], ignore_index=True)
 
     fig = px.scatter(
-        df,
+        plot_df,
         x='GDP',
-        y='CO2 Emissions',
-        color=df['Cluster'].astype(str),
-        hover_name=df.columns[0]  # first column (country name)
+        y='CO2',
+        color=plot_df['Cluster'].astype(str),
+        title="Cluster Distribution (Your Input Included)"
     )
 
     st.plotly_chart(fig)
-
-    # Download option
-    csv = df.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        "Download Clustered Data",
-        csv,
-        "clustered_data.csv",
-        "text/csv"
-    )
