@@ -94,7 +94,12 @@ selected_country = st.sidebar.selectbox("Select Country", country_list)
 
 selected_data = df[df['Country'] == selected_country]
 
-selected_cluster = selected_data['Cluster'].values[0]
+if not selected_data.empty:
+    selected_cluster = selected_data['Cluster'].values[0]
+    selected_label = cluster_names[selected_cluster]
+else:
+    st.warning("No data found for selected country")
+
 selected_label = cluster_names[selected_cluster]
 
 
