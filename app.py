@@ -1,1 +1,90 @@
-{"nbformat":4,"nbformat_minor":0,"metadata":{"colab":{"provenance":[],"authorship_tag":"ABX9TyPHtb5q6r+d0i26haCi+/Dj"},"kernelspec":{"name":"python3","display_name":"Python 3"},"language_info":{"name":"python"}},"cells":[{"cell_type":"code","execution_count":null,"metadata":{"id":"ogcTYYbkLrTt","colab":{"base_uri":"https://localhost:8080/","height":383},"executionInfo":{"status":"error","timestamp":1774524204660,"user_tz":-240,"elapsed":20,"user":{"displayName":"Surya ks","userId":"15489366170047166168"}},"outputId":"1a445d9d-ed4e-4e32-c098-9e75a76bc1b6"},"outputs":[{"output_type":"error","ename":"ModuleNotFoundError","evalue":"No module named 'streamlit'","traceback":["\u001b[0;31m---------------------------------------------------------------------------\u001b[0m","\u001b[0;31mModuleNotFoundError\u001b[0m                       Traceback (most recent call last)","\u001b[0;32m/tmp/ipykernel_2899/776705226.py\u001b[0m in \u001b[0;36m<cell line: 0>\u001b[0;34m()\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0;32mimport\u001b[0m \u001b[0mstreamlit\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0mst\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      2\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mnumpy\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0mnp\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      3\u001b[0m \u001b[0;32mfrom\u001b[0m \u001b[0mjoblib\u001b[0m \u001b[0;32mimport\u001b[0m \u001b[0mload\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      4\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m \u001b[0;31m# Load model\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n","\u001b[0;31mModuleNotFoundError\u001b[0m: No module named 'streamlit'","","\u001b[0;31m---------------------------------------------------------------------------\u001b[0;32m\nNOTE: If your import is failing due to a missing package, you can\nmanually install dependencies using either !pip or !apt.\n\nTo view examples of installing some common dependencies, click the\n\"Open Examples\" button below.\n\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n"],"errorDetails":{"actions":[{"action":"open_url","actionText":"Open Examples","url":"/notebooks/snippets/importing_libraries.ipynb"}]}}],"source":["import streamlit as st\n","import pickle\n","import numpy as np\n","\n","# Load saved scaler and model\n","scaler = pickle.load(open('scaler2.pkl', 'rb'))\n","model = pickle.load(open('kmeans2.pkl', 'rb'))\n","\n","st.title(\"🌍 Country Clustering App\")\n","import streamlit as st\n","import pandas as pd\n","import numpy as np\n","import pickle\n","from sklearn.preprocessing import StandardScaler\n","from sklearn.cluster import KMeans\n","\n","st.title(\"🌍 Country Clustering App (All-in-One)\")\n","\n","# =========================\n","# STEP 1: Load Dataset\n","# =========================\n","# Change file name if needed\n","df = pd.read_excel(\"World_development_mesurement.xlsx\")\n","\n","# Select only 3 features\n","features = ['GDP', 'Birth Rate', 'CO2 Emissions']\n","df = df[features].dropna()\n","\n","st.write(\"### Sample Data\", df.head())\n","\n","# =========================\n","# STEP 2: Train Model\n","# =========================\n","scaler = StandardScaler()\n","X_scaled = scaler.fit_transform(df)\n","\n","kmeans = KMeans(n_clusters=3, random_state=42)\n","kmeans.fit(X_scaled)\n","\n","# =========================\n","# STEP 3: Save Model\n","# =========================\n","with open('scaler2.pkl', 'wb') as f:\n","    pickle.dump(scaler, f)\n","\n","with open('kmeans2.pkl', 'wb') as f:\n","    pickle.dump(kmeans, f)\n","\n","st.success(\"Model trained and saved successfully!\")\n","\n","# =========================\n","# STEP 4: User Input\n","# =========================\n","st.write(\"### Enter New Data\")\n","\n","gdp = st.number_input(\"GDP\", value=10000.0)\n","birth_rate = st.number_input(\"Birth Rate\", value=20.0)\n","co2 = st.number_input(\"CO2 Emissions\", value=5.0)\n","\n","# =========================\n","# STEP 5: Prediction\n","# =========================\n","if st.button(\"Predict Cluster\"):\n","\n","    input_data = np.array([[gdp, birth_rate, co2]])\n","\n","    scaled_data = scaler.transform(input_data)\n","\n","    cluster = kmeans.predict(scaled_data)\n","\n","    st.success(f\"Predicted Cluster: {cluster[0]}\")\n","st.write(\"Enter the details below:\")\n","\n","# User Inputs\n","gdp = st.number_input(\"GDP\", value=10000.0)\n","birth_rate = st.number_input(\"Birth Rate\", value=20.0)\n","co2 = st.number_input(\"CO2 Emissions\", value=5.0)\n","\n","# Predict button\n","if st.button(\"Predict Cluster\"):\n","\n","    # Arrange input in same order as training\n","    input_data = np.array([[gdp, birth_rate, co2]])\n","\n","    # Scale input\n","    scaled_data = scaler.transform(input_data)\n","\n","    # Predict cluster\n","    cluster = model.predict(scaled_data)\n","\n","    st.success(f\"Predicted Cluster: {cluster[0]}\")"]}]}
+# -*- coding: utf-8 -*-
+"""app.py
+
+Automatically generated by Colab.
+
+Original file is located at
+    https://colab.research.google.com/drive/1Q385v5O89DPVwT5sWUG0qxAdyLrAZl6d
+"""
+
+import streamlit as st
+import pandas as pd
+import pickle
+
+st.title("🌍 Country Clustering App")
+
+# Upload file
+uploaded_file = st.file_uploader("Upload your dataset (CSV)", type=["csv"])
+
+if uploaded_file is not None:
+
+    df = pd.read_csv(uploaded_file)
+
+    st.write("### Raw Data")
+    st.write(df.head())
+
+    # -----------------------------
+    # DATA CLEANING
+    # -----------------------------
+    try:
+        df['GDP'] = df['GDP'].replace(r'[\$,]', '', regex=True).astype(float)
+        df['CO2 Emissions'] = df['CO2 Emissions'].replace(',', '', regex=True).astype(float)
+        df['Birth Rate'] = pd.to_numeric(df['Birth Rate'], errors='coerce')
+    except:
+        st.error("Column names not matching! Please check your dataset.")
+        st.stop()
+
+    # Select features
+    features = ['GDP', 'Birth Rate', 'CO2 Emissions']
+    X = df[features]
+
+    # Handle missing values
+    X.fillna(X.mean(), inplace=True)
+
+    # -----------------------------
+    # LOAD MODEL + SCALER
+    # -----------------------------
+    try:
+        scaler = pickle.load(open('scaler.pkl', 'rb'))
+        kmeans = pickle.load(open('kmeans.pkl', 'rb'))
+    except:
+        st.error("Model files not found! Upload scaler.pkl and kmeans.pkl")
+        st.stop()
+
+    # Scale data
+    X_scaled = scaler.transform(X)
+
+    # Predict clusters
+    clusters = kmeans.predict(X_scaled)
+
+    # Add cluster column
+    df['Cluster'] = clusters
+
+    st.write("### Clustered Data")
+    st.write(df.head())
+
+    # -----------------------------
+    # VISUALIZATION
+    # -----------------------------
+    st.write("### Cluster Visualization")
+
+    import plotly.express as px
+
+    fig = px.scatter(
+        df,
+        x='GDP',
+        y='CO2 Emissions',
+        color=df['Cluster'].astype(str),
+        hover_name=df.columns[0]  # first column (country name)
+    )
+
+    st.plotly_chart(fig)
+
+    # Download option
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        "Download Clustered Data",
+        csv,
+        "clustered_data.csv",
+        "text/csv"
+    )
