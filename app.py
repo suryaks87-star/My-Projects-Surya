@@ -11,6 +11,7 @@ import streamlit as st
 import pandas as pd
 import pickle
 import plotly.express as px
+from sklearn.decomposition import PCA
 
 # -------------------------------
 # Load model and scaler
@@ -30,22 +31,25 @@ cluster_names = {
 # -------------------------------
 # Title
 # -------------------------------
-st.title("🌍 Country Development Clustering App")
+st.title("🌍 Country Development Clustering App (PCA Visualization)")
 
 # -------------------------------
 # Sidebar Inputs
 # -------------------------------
 st.sidebar.header("Enter Country Details")
 
-gdp = st.sidebar.number_input("GDP", min_value=0.0, value=1000000.0)
-birth_rate = st.sidebar.number_input("Birth Rate", min_value=0.0, value=20.0)
-co2 = st.sidebar.number_input("CO2 Emissions", min_value=0.0, value=1000000.0)
+gdp = st.sidebar.number_input("GDP", value=1000000000000.0)
+birth_rate = st.sidebar.number_input("Birth Rate", value=20.0)
+co2 = st.sidebar.number_input("CO2 Emissions", value=1000000.0)
 
 # -------------------------------
-# Create user input dataframe
+# Feature setup
 # -------------------------------
 features = ['GDP', 'Birth Rate', 'CO2 Emissions']
 
+# -------------------------------
+# User input dataframe
+# -------------------------------
 user_input = pd.DataFrame([[gdp, birth_rate, co2]], columns=features)
 
 # -------------------------------
@@ -56,33 +60,52 @@ cluster = model.predict(user_scaled)[0]
 cluster_label = cluster_names[cluster]
 
 # -------------------------------
-# Show prediction
+# Show Prediction
 # -------------------------------
-st.success(f"🌍 This country belongs to: {cluster_label} (Cluster {cluster})")
+st.success(f"🌍 This country is: {cluster_label} (Cluster {cluster})")
 
 # -------------------------------
-# Load dataset
+# Load CLEANED dataset
 # -------------------------------
-from sklearn.decomposition import PCA
+df = pd.read_csv("cleaned_data.csv")   # 👈 IMPORTANT
 
+# -------------------------------
+# Prepare data
+# -------------------------------
+X = df[features]
+X_scaled = scaler.transform(X)
+
+# Predict clusters
+df['Cluster'] = model.predict(X_scaled)
+df['Cluster_Name'] = df['Cluster'].map(cluster_names)
+
+# -------------------------------
+# PCA Transformation
+# -------------------------------
 pca = PCA(n_components=2)
 X_pca = pca.fit_transform(X_scaled)
 
 df['PC1'] = X_pca[:, 0]
 df['PC2'] = X_pca[:, 1]
 
+# Transform user input to PCA
+user_pca = pca.transform(user_scaled)
+
+# -------------------------------
+# Visualization (PCA)
+# -------------------------------
 fig = px.scatter(
     df,
     x='PC1',
     y='PC2',
     color='Cluster_Name',
-    title="Cluster Distribution (PCA View)"
+    title="Cluster Distribution (PCA View - Your Input Included)",
+    hover_data=['Cluster_Name']
 )
-# -------------------------------
-# Show plot
-# -------------------------------
-user_pca = pca.transform(user_scaled)
 
+# -------------------------------
+# Add USER POINT ⭐
+# -------------------------------
 fig.add_scatter(
     x=[user_pca[0][0]],
     y=[user_pca[0][1]],
@@ -90,4 +113,13 @@ fig.add_scatter(
     marker=dict(size=14, color='black', symbol='star'),
     name='Your Input ⭐'
 )
+
+# -------------------------------
+# Show Plot
+# -------------------------------
 st.plotly_chart(fig)
+
+# -------------------------------
+# Extra Info (optional)
+# -------------------------------
+st.write("Dataset shape:", df.shape)
