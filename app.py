@@ -63,38 +63,31 @@ st.success(f"🌍 This country belongs to: {cluster_label} (Cluster {cluster})")
 # -------------------------------
 # Load dataset
 # -------------------------------
-df = pd.read_csv("cleaned_data.csv")  # 👈 change filename
+from sklearn.decomposition import PCA
 
-X = df[features]
-X_scaled = scaler.transform(X)
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
 
-df['Cluster'] = model.predict(X_scaled)
-df['Cluster_Name'] = df['Cluster'].map(cluster_names)
+df['PC1'] = X_pca[:, 0]
+df['PC2'] = X_pca[:, 1]
 
-# -------------------------------
-# Visualization
-# -------------------------------
 fig = px.scatter(
     df,
-    x='GDP',
-    y='CO2 Emissions',
+    x='PC1',
+    y='PC2',
     color='Cluster_Name',
-    title="Cluster Distribution (Your Input Included)",
-    hover_data=['Birth Rate', 'Cluster_Name']
+    title="Cluster Distribution (PCA View)"
 )
+# -------------------------------
+# Show plot
+# -------------------------------
+user_pca = pca.transform(user_scaled)
 
-# -------------------------------
-# Add USER POINT ⭐
-# -------------------------------
 fig.add_scatter(
-    x=[gdp],
-    y=[co2],
+    x=[user_pca[0][0]],
+    y=[user_pca[0][1]],
     mode='markers',
     marker=dict(size=14, color='black', symbol='star'),
     name='Your Input ⭐'
 )
-
-# -------------------------------
-# Show plot
-# -------------------------------
 st.plotly_chart(fig)
