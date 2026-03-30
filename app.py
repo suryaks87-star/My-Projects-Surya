@@ -13,11 +13,10 @@ import pickle
 import plotly.express as px
 
 # -------------------------------
-# Load model, scaler, PCA
+# Load model and scaler
 # -------------------------------
 model = pickle.load(open('kmeans2.pkl', 'rb'))
 scaler = pickle.load(open('scaler2.pkl', 'rb'))
-pca = pickle.load(open('pca.pkl', 'rb'))
 
 # -------------------------------
 # Cluster labels
@@ -60,14 +59,6 @@ df['Cluster'] = model.predict(X_scaled)
 df['Cluster_Name'] = df['Cluster'].map(cluster_names)
 
 # -------------------------------
-# PCA Transformation
-# -------------------------------
-X_pca = pca.transform(X_scaled)
-
-df['PC1'] = X_pca[:, 0]
-df['PC2'] = X_pca[:, 1]
-
-# -------------------------------
 # Sidebar - User Input
 # -------------------------------
 st.sidebar.header("Enter Country Details")
@@ -84,9 +75,6 @@ cluster = model.predict(user_scaled)[0]
 label = cluster_names[cluster]
 
 st.success(f"🌍 Your Input belongs to: {label} (Cluster {cluster})")
-
-# PCA for user
-user_pca = pca.transform(user_scaled)
 
 # -------------------------------
 # Sidebar - Country Search
@@ -113,31 +101,30 @@ st.write("### 🤝 Similar Countries")
 st.write(similar.tolist())
 
 # -------------------------------
-# Visualization (PCA)
+# Visualization (GDP vs CO2)
 # -------------------------------
 fig = px.scatter(
     df,
-    x='PC1',
-    y='PC2',
+    x='GDP',
+    y='CO2 Emissions',
     color='Cluster_Name',
-    title="Cluster Distribution (PCA View)"
+    title="Cluster Distribution (GDP vs CO2)",
+    hover_name='Country'
 )
 
-# User point ⭐
+# ⭐ User input
 fig.add_scatter(
-    x=[user_pca[0][0]],
-    y=[user_pca[0][1]],
+    x=[gdp],
+    y=[co2],
     mode='markers',
     marker=dict(size=14, color='black', symbol='star'),
     name='Your Input ⭐'
 )
 
-# Selected country 🔍
-selected_pca = selected_data[['PC1', 'PC2']].values
-
+# 🔍 Selected country
 fig.add_scatter(
-    x=[selected_pca[0][0]],
-    y=[selected_pca[0][1]],
+    x=selected_data['GDP'],
+    y=selected_data['CO2 Emissions'],
     mode='markers',
     marker=dict(size=14, color='green', symbol='diamond'),
     name='Selected Country 🔍'
@@ -160,7 +147,6 @@ if st.checkbox("Show Dataset Info"):
     st.write("Shape:", df.shape)
     st.write("Columns:", df.columns.tolist())
 
-# Column filter
 if st.checkbox("Select Columns to View"):
     cols = st.multiselect("Choose columns", df.columns.tolist())
     if cols:
@@ -175,3 +161,4 @@ st.download_button(
     file_name='cleaned_data.csv',
     mime='text/csv'
 )
+
