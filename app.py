@@ -33,20 +33,20 @@ cluster_names = {
 st.title("🌍 Country Development Clustering App")
 
 # -------------------------------
-# User Inputs (Example features)
+# Sidebar Inputs
 # -------------------------------
 st.sidebar.header("Enter Country Details")
 
 gdp = st.sidebar.number_input("GDP", value=1000000000000.0)
-co2 = st.sidebar.number_input("CO2 Emissions", value=1000000.0)
-life_exp = st.sidebar.number_input("Life Expectancy", value=70.0)
 birth_rate = st.sidebar.number_input("Birth Rate", value=20.0)
-energy = st.sidebar.number_input("Energy Usage", value=500.0)
+co2 = st.sidebar.number_input("CO2 Emissions", value=1000000.0)
 
-# ⚠️ IMPORTANT: Order must match training data
-features = ['Birth Rate', 'CO2 Emissions', 'Energy Usage', 'GDP', 'Life Expectancy']
+# -------------------------------
+# Create user input dataframe
+# -------------------------------
+features = ['GDP', 'Birth Rate', 'CO2 Emissions']
 
-user_input = pd.DataFrame([[birth_rate, co2, energy, gdp, life_exp]], columns=features)
+user_input = pd.DataFrame([[gdp, birth_rate, co2]], columns=features)
 
 # -------------------------------
 # Scale + Predict
@@ -56,23 +56,19 @@ cluster = model.predict(user_scaled)[0]
 cluster_label = cluster_names[cluster]
 
 # -------------------------------
-# Show Prediction
+# Show prediction
 # -------------------------------
 st.success(f"🌍 This country belongs to: {cluster_label} (Cluster {cluster})")
 
 # -------------------------------
-# Load original dataset (used for plotting)
+# Load dataset
 # -------------------------------
-df = pd.read_csv("your_dataset.csv")   # <-- change filename
+df = pd.read_csv("your_dataset.csv")  # 👈 change filename
 
-# Apply same feature selection
 X = df[features]
-
-# Scale + predict clusters
 X_scaled = scaler.transform(X)
-df['Cluster'] = model.predict(X_scaled)
 
-# Map names
+df['Cluster'] = model.predict(X_scaled)
 df['Cluster_Name'] = df['Cluster'].map(cluster_names)
 
 # -------------------------------
@@ -84,7 +80,7 @@ fig = px.scatter(
     y='CO2 Emissions',
     color='Cluster_Name',
     title="Cluster Distribution (Your Input Included)",
-    hover_data=['Cluster_Name']
+    hover_data=['Birth Rate', 'Cluster_Name']
 )
 
 # -------------------------------
@@ -98,4 +94,7 @@ fig.add_scatter(
     name='Your Input ⭐'
 )
 
+# -------------------------------
+# Show plot
+# -------------------------------
 st.plotly_chart(fig)
