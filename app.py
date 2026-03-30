@@ -105,7 +105,7 @@ selected_label = cluster_names[selected_cluster]
 
 
 st.write("### 🌍 Selected Country")
-st.write(selected_data[['Country', 'Cluster_Name']])
+#st.write(selected_data[['Country', 'Cluster_Name']])
 
 
 
