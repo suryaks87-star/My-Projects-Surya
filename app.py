@@ -164,7 +164,7 @@ with col1:
     st.metric("CO2 Emissions", selected_data['CO2 Emissions'])
 
 with col2:
-    st.metric("Life Expectancy", selected_data['Life Expectancy'])
+    st.metric("Life Expectancy", selected_data['Energy Usage'])
     st.metric("Internet Usage", selected_data['Internet Usage'])
 
 # -------------------------------
