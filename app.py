@@ -8,85 +8,94 @@ Original file is located at
 """
 
 import streamlit as st
-import numpy as np
-import pickle
 import pandas as pd
+import pickle
 import plotly.express as px
 
-st.set_page_config(page_title="Country Clustering App", layout="centered")
-
-st.title("🌍 Country Development Predictor")
-
-st.write("Enter country details to predict whether it is Developed or Developing")
-
-# -----------------------------
-# USER INPUT
-# -----------------------------
-gdp = st.number_input("GDP (Example: 3000000000000)", min_value=0.0)
-birth_rate = st.number_input("Birth Rate (Example: 15.2)", min_value=0.0)
-co2 = st.number_input("CO2 Emissions (Example: 2500000)", min_value=0.0)
-
-# -----------------------------
-# LOAD MODEL
-# -----------------------------
+# -------------------------------
+# Load model and scaler
+# -------------------------------
+model = pickle.load(open('kmeans2.pkl', 'rb'))
 scaler = pickle.load(open('scaler2.pkl', 'rb'))
-kmeans = pickle.load(open('kmeans2.pkl', 'rb'))
 
-# -----------------------------
-# PREDICTION
-# -----------------------------
-if st.button("Predict"):
+# -------------------------------
+# Cluster labels
+# -------------------------------
+cluster_names = {
+    0: "Developing 🌱",
+    1: "Emerging ⚡",
+    2: "Developed 🌍"
+}
 
-    # Input array
-    input_data = np.array([[gdp, birth_rate, co2]])
+# -------------------------------
+# Title
+# -------------------------------
+st.title("🌍 Country Development Clustering App")
 
-    # Scale
-    input_scaled = scaler.transform(input_data)
+# -------------------------------
+# User Inputs (Example features)
+# -------------------------------
+st.sidebar.header("Enter Country Details")
 
-    # Predict cluster
-    cluster = kmeans.predict(input_scaled)[0]
+gdp = st.sidebar.number_input("GDP", value=1000000000000.0)
+co2 = st.sidebar.number_input("CO2 Emissions", value=1000000.0)
+life_exp = st.sidebar.number_input("Life Expectancy", value=70.0)
+birth_rate = st.sidebar.number_input("Birth Rate", value=20.0)
+energy = st.sidebar.number_input("Energy Usage", value=500.0)
 
-    # -----------------------------
-    # CLUSTER INTERPRETATION
-    # -----------------------------
-    if cluster == 0:
-        result = "Developed Country 🌟"
-    elif cluster == 1:
-        result = "Developing Country 🌱"
-    else:
-        result = "Underdeveloped Country ⚠️"
+# ⚠️ IMPORTANT: Order must match training data
+features = ['Birth Rate', 'CO2 Emissions', 'Energy Usage', 'GDP', 'Life Expectancy']
 
-    st.success(f"Predicted Cluster: {cluster}")
-    st.subheader(result)
+user_input = pd.DataFrame([[birth_rate, co2, energy, gdp, life_exp]], columns=features)
 
-    # -----------------------------
-    # VISUALIZATION
-    # -----------------------------
-    st.write("### 📊 Cluster Visualization")
+# -------------------------------
+# Scale + Predict
+# -------------------------------
+user_scaled = scaler.transform(user_input)
+cluster = model.predict(user_scaled)[0]
+cluster_label = cluster_names[cluster]
 
-    # Sample dataset (for plotting reference clusters)
-    data = pd.DataFrame({
-        'GDP': [1e12, 5e12, 2e12, 8e11, 3e12],
-        'CO2': [1e6, 5e6, 2e6, 8e5, 3e6],
-        'Cluster': [0, 1, 2, 0, 1]
-    })
+# -------------------------------
+# Show Prediction
+# -------------------------------
+st.success(f"🌍 This country belongs to: {cluster_label} (Cluster {cluster})")
 
-    # Add user input point
-    user_df = pd.DataFrame({
-        'GDP': [gdp],
-        'CO2': [co2],
-        'Cluster': [cluster]
-    })
+# -------------------------------
+# Load original dataset (used for plotting)
+# -------------------------------
+df = pd.read_csv("your_dataset.csv")   # <-- change filename
 
-    # Combine
-    plot_df = pd.concat([data, user_df], ignore_index=True)
+# Apply same feature selection
+X = df[features]
 
-    fig = px.scatter(
-        plot_df,
-        x='GDP',
-        y='CO2',
-        color=plot_df['Cluster'].astype(str),
-        title="Cluster Distribution (Your Input Included)"
-    )
+# Scale + predict clusters
+X_scaled = scaler.transform(X)
+df['Cluster'] = model.predict(X_scaled)
 
-    st.plotly_chart(fig)
+# Map names
+df['Cluster_Name'] = df['Cluster'].map(cluster_names)
+
+# -------------------------------
+# Visualization
+# -------------------------------
+fig = px.scatter(
+    df,
+    x='GDP',
+    y='CO2 Emissions',
+    color='Cluster_Name',
+    title="Cluster Distribution (Your Input Included)",
+    hover_data=['Cluster_Name']
+)
+
+# -------------------------------
+# Add USER POINT ⭐
+# -------------------------------
+fig.add_scatter(
+    x=[gdp],
+    y=[co2],
+    mode='markers',
+    marker=dict(size=14, color='black', symbol='star'),
+    name='Your Input ⭐'
+)
+
+st.plotly_chart(fig)
