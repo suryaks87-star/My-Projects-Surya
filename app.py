@@ -37,9 +37,9 @@ st.title("🌍 Country Development Clustering App")
 # -------------------------------
 st.sidebar.header("Enter Country Details")
 
-gdp = st.sidebar.number_input("GDP", min_value=1000000.0, value=1000000.0)
-birth_rate = st.sidebar.number_input("Birth Rate", min_value=20.0, value=20.0)
-co2 = st.sidebar.number_input("CO2 Emissions", min_value=1000000.0, value=1000000.0)
+gdp = st.sidebar.number_input("GDP", min_value=0.0, value=1000000.0)
+birth_rate = st.sidebar.number_input("Birth Rate", min_value=0.0, value=20.0)
+co2 = st.sidebar.number_input("CO2 Emissions", min_value=0.0, value=1000000.0)
 
 # -------------------------------
 # Create user input dataframe
@@ -63,7 +63,7 @@ st.success(f"🌍 This country belongs to: {cluster_label} (Cluster {cluster})")
 # -------------------------------
 # Load dataset
 # -------------------------------
-df = pd.read_csv("your_dataset.csv")  # 👈 change filename
+df = pd.read_csv("cleaned_data.csv")  # 👈 change filename
 
 X = df[features]
 X_scaled = scaler.transform(X)
