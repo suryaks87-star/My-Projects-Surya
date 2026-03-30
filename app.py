@@ -145,15 +145,15 @@ fig.add_scatter(
 
 
 # 🔍 Selected country
+selected_data = df[df['Country'] == selected_country].iloc[0]
+
 fig.add_scatter(
-    x=selected_data['GDP'],
-    y=selected_data['CO2 Emissions'],
+    x=[selected_data['GDP']],
+    y=[selected_data['CO2 Emissions']],
     mode='markers',
     marker=dict(size=14, color='green', symbol='diamond'),
-    name='Selected Country 🔍'+selected_country
+    name='Selected Country 🔍 ' + selected_country
 )
-
-st.plotly_chart(fig)
 
 
 
