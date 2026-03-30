@@ -154,7 +154,7 @@ fig.add_scatter(
     marker=dict(size=14, color='green', symbol='diamond'),
     name='Selected Country 🔍 ' + selected_country
 )
-
+st.plotly_chart(fig)
 
 
 # -------------------------------
