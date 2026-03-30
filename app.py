@@ -11,13 +11,13 @@ import streamlit as st
 import pandas as pd
 import pickle
 import plotly.express as px
-from sklearn.decomposition import PCA
 
 # -------------------------------
-# Load model and scaler
+# Load model, scaler, PCA
 # -------------------------------
 model = pickle.load(open('kmeans2.pkl', 'rb'))
 scaler = pickle.load(open('scaler2.pkl', 'rb'))
+pca = pickle.load(open('pca.pkl', 'rb'))
 
 # -------------------------------
 # Cluster labels
@@ -31,43 +31,23 @@ cluster_names = {
 # -------------------------------
 # Title
 # -------------------------------
-st.title("🌍 Country Development Clustering App (PCA Visualization)")
+st.title("🌍 Country Development Clustering App")
 
 # -------------------------------
-# Sidebar Inputs
+# Load data
 # -------------------------------
-st.sidebar.header("Enter Country Details")
+df = pd.read_csv("cleaned_data.csv")
+df_original = pd.read_excel("World_development_mesurement.xlsx")
 
-gdp = st.sidebar.number_input("GDP", value=1000000000000.0)
-birth_rate = st.sidebar.number_input("Birth Rate", value=20.0)
-co2 = st.sidebar.number_input("CO2 Emissions", value=1000000.0)
+# Add Country back
+df = df.reset_index(drop=True)
+df_original = df_original.reset_index(drop=True)
+df['Country'] = df_original['Country']
 
 # -------------------------------
-# Feature setup
+# Features
 # -------------------------------
 features = ['GDP', 'Birth Rate', 'CO2 Emissions']
-
-# -------------------------------
-# User input dataframe
-# -------------------------------
-user_input = pd.DataFrame([[gdp, birth_rate, co2]], columns=features)
-
-# -------------------------------
-# Scale + Predict
-# -------------------------------
-user_scaled = scaler.transform(user_input)
-cluster = model.predict(user_scaled)[0]
-cluster_label = cluster_names[cluster]
-
-# -------------------------------
-# Show Prediction
-# -------------------------------
-st.success(f"🌍 This country is: {cluster_label} (Cluster {cluster})")
-
-# -------------------------------
-# Load CLEANED dataset
-# -------------------------------
-df = pd.read_csv("cleaned_data.csv")   # 👈 IMPORTANT
 
 # -------------------------------
 # Prepare data
@@ -82,14 +62,55 @@ df['Cluster_Name'] = df['Cluster'].map(cluster_names)
 # -------------------------------
 # PCA Transformation
 # -------------------------------
-pca = PCA(n_components=2)
-X_pca = pca.fit_transform(X_scaled)
+X_pca = pca.transform(X_scaled)
 
 df['PC1'] = X_pca[:, 0]
 df['PC2'] = X_pca[:, 1]
 
-# Transform user input to PCA
+# -------------------------------
+# Sidebar - User Input
+# -------------------------------
+st.sidebar.header("Enter Country Details")
+
+gdp = st.sidebar.number_input("GDP", value=1000000000000.0)
+birth_rate = st.sidebar.number_input("Birth Rate", value=20.0)
+co2 = st.sidebar.number_input("CO2 Emissions", value=1000000.0)
+
+user_input = pd.DataFrame([[gdp, birth_rate, co2]], columns=features)
+
+# Predict user
+user_scaled = scaler.transform(user_input)
+cluster = model.predict(user_scaled)[0]
+label = cluster_names[cluster]
+
+st.success(f"🌍 Your Input belongs to: {label} (Cluster {cluster})")
+
+# PCA for user
 user_pca = pca.transform(user_scaled)
+
+# -------------------------------
+# Sidebar - Country Search
+# -------------------------------
+st.sidebar.header("🔍 Search Country")
+
+country_list = df['Country'].dropna().unique()
+selected_country = st.sidebar.selectbox("Select Country", country_list)
+
+selected_data = df[df['Country'] == selected_country]
+
+selected_cluster = selected_data['Cluster'].values[0]
+selected_label = cluster_names[selected_cluster]
+
+st.write("### 🌍 Selected Country")
+st.write(selected_data[['Country', 'Cluster_Name']])
+
+st.success(f"{selected_country} is: {selected_label}")
+
+# Similar countries
+similar = df[df['Cluster'] == selected_cluster]['Country']
+
+st.write("### 🤝 Similar Countries")
+st.write(similar.tolist())
 
 # -------------------------------
 # Visualization (PCA)
@@ -99,13 +120,10 @@ fig = px.scatter(
     x='PC1',
     y='PC2',
     color='Cluster_Name',
-    title="Cluster Distribution (PCA View - Your Input Included)",
-    hover_data=['Cluster_Name']
+    title="Cluster Distribution (PCA View)"
 )
 
-# -------------------------------
-# Add USER POINT ⭐
-# -------------------------------
+# User point ⭐
 fig.add_scatter(
     x=[user_pca[0][0]],
     y=[user_pca[0][1]],
@@ -114,12 +132,46 @@ fig.add_scatter(
     name='Your Input ⭐'
 )
 
-# -------------------------------
-# Show Plot
-# -------------------------------
+# Selected country 🔍
+selected_pca = selected_data[['PC1', 'PC2']].values
+
+fig.add_scatter(
+    x=[selected_pca[0][0]],
+    y=[selected_pca[0][1]],
+    mode='markers',
+    marker=dict(size=14, color='green', symbol='diamond'),
+    name='Selected Country 🔍'
+)
+
 st.plotly_chart(fig)
 
 # -------------------------------
-# Extra Info (optional)
+# Dataset View
 # -------------------------------
-st.write("Dataset shape:", df.shape)
+st.subheader("📊 Dataset Section")
+
+if st.checkbox("Show Dataset"):
+    st.dataframe(df)
+
+if st.checkbox("Show Top 10 Rows"):
+    st.dataframe(df.head(10))
+
+if st.checkbox("Show Dataset Info"):
+    st.write("Shape:", df.shape)
+    st.write("Columns:", df.columns.tolist())
+
+# Column filter
+if st.checkbox("Select Columns to View"):
+    cols = st.multiselect("Choose columns", df.columns.tolist())
+    if cols:
+        st.dataframe(df[cols])
+
+# Download button
+csv = df.to_csv(index=False)
+
+st.download_button(
+    label="📥 Download Dataset",
+    data=csv,
+    file_name='cleaned_data.csv',
+    mime='text/csv'
+)
