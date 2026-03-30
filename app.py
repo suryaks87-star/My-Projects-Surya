@@ -156,6 +156,16 @@ fig.add_scatter(
 )
 st.plotly_chart(fig)
 
+st.write(f"### 🌍 {selected_country} Details")
+col1, col2 = st.columns(2)
+
+with col1:
+    st.metric("GDP", selected_data['GDP'])
+    st.metric("CO2 Emissions", selected_data['CO2 Emissions'])
+
+with col2:
+    st.metric("Life Expectancy", selected_data['Life Expectancy'])
+    st.metric("Internet Usage", selected_data['Internet Usage'])
 
 # -------------------------------
 # Dataset View
