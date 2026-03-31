@@ -187,13 +187,25 @@ if st.checkbox("Select Columns to View"):
     if cols:
         st.dataframe(df[cols])
 
+
+
+# Download button
+csv = df.to_csv(index=False)
+
+st.download_button(
+    label="📥 Download Dataset",
+    data=csv,
+    file_name='cleaned_data.csv',
+    mime='text/csv'
+)
+
 #graph 
 import numpy as np
 
 # User inputs
 gdp = st.slider("GDP", 0, 100000, 20000)
 birth_rate = st.slider("Birth Rate", 0.0, 50.0, 20.0)
-co2 = st.slider("CO2 Emissions", 0.0, 20.0, 5.0)
+#co2 = st.slider("CO2 Emissions", 0.0, 20.0, 5.0)
 
 # Create input array
 input_data = np.array([[gdp, birth_rate, co2]])
@@ -204,7 +216,7 @@ input_scaled = scaler.transform(input_data)
 # Predict cluster
 cluster = model.predict(input_scaled)[0]
 
-st.write("### 🌍 Predicted Cluster:", cluster)
+st.write("###  Predicted Cluster:", cluster)
 def get_label(cluster):
     if cluster == 0:
         return "Developed 🌟"
@@ -248,14 +260,3 @@ for i in range(len(st.session_state.history)-1):
         mode='lines',
         line=dict(color='red')
     )
-
-# Download button
-csv = df.to_csv(index=False)
-
-st.download_button(
-    label="📥 Download Dataset",
-    data=csv,
-    file_name='cleaned_data.csv',
-    mime='text/csv'
-)
-
