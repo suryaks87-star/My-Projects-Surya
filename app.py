@@ -221,7 +221,7 @@ def get_label(cluster):
     if cluster == 0:
         return "Developing"
     elif cluster == 1:
-        return "Emerged"
+        return "Emerging"
     else:
         return "Developed"
 
