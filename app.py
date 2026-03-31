@@ -187,7 +187,67 @@ if st.checkbox("Select Columns to View"):
     if cols:
         st.dataframe(df[cols])
 
+#graph 
+import numpy as np
 
+# User inputs
+gdp = st.slider("GDP", 0, 100000, 20000)
+birth_rate = st.slider("Birth Rate", 0.0, 50.0, 20.0)
+co2 = st.slider("CO2 Emissions", 0.0, 20.0, 5.0)
+
+# Create input array
+input_data = np.array([[gdp, birth_rate, co2]])
+
+# Scale
+input_scaled = scaler.transform(input_data)
+
+# Predict cluster
+cluster = model.predict(input_scaled)[0]
+
+st.write("### 🌍 Predicted Cluster:", cluster)
+def get_label(cluster):
+    if cluster == 0:
+        return "Developed 🌟"
+    elif cluster == 1:
+        return "Developing ⚙️"
+    else:
+        return "Emerging 🚀"
+
+st.write("### Country Type:", get_label(cluster))
+import plotly.express as px
+
+fig = px.scatter(
+    df,
+    x='GDP',
+    y='Birth Rate',
+    color='Cluster',
+    size='CO2 Emissions',
+    title="Country Development Clusters"
+)
+
+# Add user point
+fig.add_scatter(
+    x=[gdp],
+    y=[birth_rate],
+    mode='markers',
+    marker=dict(size=15, color='red', symbol='diamond'),
+    name='Your Input'
+)
+
+st.plotly_chart(fig)
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+st.session_state.history.append([gdp, birth_rate])
+
+# Plot path
+for i in range(len(st.session_state.history)-1):
+    fig.add_scatter(
+        x=[st.session_state.history[i][0], st.session_state.history[i+1][0]],
+        y=[st.session_state.history[i][1], st.session_state.history[i+1][1]],
+        mode='lines',
+        line=dict(color='red')
+    )
 
 # Download button
 csv = df.to_csv(index=False)
