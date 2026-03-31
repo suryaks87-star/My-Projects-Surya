@@ -219,11 +219,11 @@ cluster = model.predict(input_scaled)[0]
 st.write("###  Predicted Cluster:", cluster)
 def get_label(cluster):
     if cluster == 0:
-        return "Developed 🌟"
+        return "Developing"
     elif cluster == 1:
-        return "Developing ⚙️"
+        return "Emerged"
     else:
-        return "Emerging 🚀"
+        return "Developed"
 
 st.write("### Country Type:", get_label(cluster))
 import plotly.express as px
