@@ -27,15 +27,15 @@ scaler = pickle.load(open('scaler2.pkl', 'rb'))
 # Cluster labels
 # -------------------------------
 cluster_names = {
-    0: "Developing 🌱",
-    1: "Emerging ⚡",
-    2: "Developed 🌍"
+    0: "Developing ",
+    1: "Emerging ",
+    2: "Developed "
 }
 
 # -------------------------------
 # Title
 # -------------------------------
-st.title("🌍 Country Development Clustering App")
+st.title("Country Development Clustering App")
 
 # -------------------------------
 # Load data
@@ -79,7 +79,7 @@ user_scaled = scaler.transform(user_input)
 cluster = model.predict(user_scaled)[0]
 label = cluster_names[cluster]
 
-st.success(f"🌍 Your Input belongs to: {label} (Cluster {cluster})")
+st.success(f"Your Input belongs to: {label} (Cluster {cluster})")
 
 
 
@@ -104,7 +104,7 @@ selected_label = cluster_names[selected_cluster]
 
 
 
-st.write("### 🌍 Selected Country")
+st.write("###  Selected Country")
 #st.write(selected_data[['Country', 'Cluster_Name']])
 
 
@@ -152,11 +152,11 @@ fig.add_scatter(
     y=[selected_data['CO2 Emissions']],
     mode='markers',
     marker=dict(size=14, color='green', symbol='diamond'),
-    name='Selected Country 🔍 ' + selected_country
+    name='Selected Country -' + selected_country
 )
 st.plotly_chart(fig)
 
-st.write(f"### 🌍 {selected_country} Details")
+st.write(f"###  {selected_country} Details")
 col1, col2 = st.columns(2)
 
 with col1:
